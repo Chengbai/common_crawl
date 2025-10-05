@@ -7,8 +7,9 @@ import gzip
 
 from enum import Enum
 from io import BytesIO
-from pydantic import validate_call, Field, StringConstraints
+from pydantic import validate_call, Field
 from typing import Annotated
+from util import retry_with_exponential_backoff
 
 
 class CommonCrawlFileType(str, Enum):
@@ -24,6 +25,9 @@ logger = logging.getLogger(__name__)
 
 
 # Step 1: Get the list of available crawls
+@retry_with_exponential_backoff(
+    max_retries=3, initial_delay=0.5, max_delay=60, backoff_factor=2
+)
 @validate_call
 def get_available_crawls(
     most_recent_crawls: Annotated[
@@ -43,6 +47,9 @@ def get_available_crawls(
 
 
 # Step 2: Get WET/WAT file paths for a specific crawl
+@retry_with_exponential_backoff(
+    max_retries=3, initial_delay=0.5, max_delay=60, backoff_factor=2
+)
 @validate_call
 def get_file_paths(
     crawl_id: Annotated[
@@ -147,6 +154,6 @@ if __name__ == "__main__":
     if args.wat:
         file_type = CommonCrawlFileType.WAT
     else:
-        assert args.wet
+        # assert args.wet
         file_type = CommonCrawlFileType.WET
     run(file_type)
