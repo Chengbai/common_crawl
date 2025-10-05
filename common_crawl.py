@@ -1,4 +1,4 @@
-# Common Crawl dataset extractor.
+# 2025. Common Crawl dataset extractor.
 
 import logging
 import json
@@ -20,12 +20,15 @@ logger = logging.getLogger(__name__)
 @validate_call
 def extract_html_from_warc(
     warc_file_path: Annotated[str, Field(description="Path to the WARC file")],
-    samples: Annotated[int, Field(gt=0, description="Number of samples to extract")],
+    max_samples: Annotated[
+        int, Field(gt=0, description="Max number of samples to extract")
+    ],
 ) -> list[dict]:
     """
     Parses a Common Crawl WARC file and extracts HTML content from 'response' records.
     Args:
         warc_file_path (str): The path to the WARC file (can be gzipped).
+        max_samples (int): Maximum number of HTML samples
     Returns:
         list: A list of dictionaries, where each dictionary contains
               'url' and 'html_content' for extracted HTML records.
@@ -72,7 +75,7 @@ def extract_html_from_warc(
                                 }
                             )
 
-                            if len(extracted_data) >= samples:
+                            if len(extracted_data) >= max_samples:
                                 break
 
                         except Exception as e:
@@ -95,9 +98,9 @@ def save_html_data(
 def run():
     # Download data to local from https://data.commoncrawl.org/commoncrawl/crawl-data/CC-MAIN-2013-20/segments/1368696381249/warc/CC-MAIN-20130516092621-00000-ip-10-60-113-184.ec2.internal.warc.gz
     warc_file_path = "/Users/chengbai/ml/dataset/common_crawl/CC-MAIN-20130516092621-00000-ip-10-60-113-184.ec2.internal.warc"
-    samples = 2
+    max_samples = 2
     extracted_html_pages = extract_html_from_warc(
-        warc_file_path=warc_file_path, samples=samples
+        warc_file_path=warc_file_path, max_samples=max_samples
     )
     logger.info(f"Extracted {len(extracted_html_pages)} from {warc_file_path}")
 
